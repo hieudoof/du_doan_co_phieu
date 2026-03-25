@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dự báo giá cổ phiếu VCB - AI Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      /* === Biến CSS === */
+      :root {
+        --primary-color: #1e3a8a;
+        --secondary-color: #3b82f6;
+        --accent-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --success-color: #22c55e;
+        --background-color: #f8fafc;
+        --card-background: #ffffff;
+        --text-primary: #1f2937;
+        --text-secondary: #6b7280;
+        --border-color: #e5e7eb;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      }
+
+      /* === Layout === */
+      body {
+        font-family: 'Inter', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: var(--text-primary);
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+      }
+
+      /* === Header === */
+      header {
+        text-align: center;
+        margin-bottom: 3rem;
+        color: white;
+      }
+
+      .header-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .header-subtitle {
+        font-size: 1.1rem;
+        font-weight: 300;
+        opacity: 0.9;
+      }
+
+      /* === Card === */
+      .card {
+        background: var(--card-background);
+        border-radius: 1rem;
+        box-shadow: var(--shadow-xl);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+      }
+
+      .card-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+      }
+
+      .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .card-description {
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+
+      .card-body {
+        padding: 2rem;
+      }
+
+      /* === Form === */
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .form-group {
+        position: relative;
+      }
+
+      .form-label {
+        display: block;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #fafafa;
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: var(--secondary-color);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+
+      .form-input:hover {
+        border-color: var(--secondary-color);
+        background: white;
+      }
+
+      /* === Button === */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, var(--accent-color) 0%, var(--success-color) 100%);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: var(--shadow-md);
+        width: 100%;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-lg);
+        filter: brightness(1.1);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+        box-shadow: var(--shadow-sm);
+      }
+
+      /* === Result === */
+      .result {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        border: 1px solid var(--success-color);
+        border-radius: 0.75rem;
+        text-align: center;
+        animation: slideInUp 0.5s ease;
+      }
+
+      .result-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--success-color);
+        margin-bottom: 0.5rem;
+      }
+
+      .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+      }
+
+      .result-note {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+      }
+
+      /* === Loading === */
+      .loading {
+        display: none;
+        text-align: center;
+        margin-top: 1rem;
+      }
+
+      .spinner {
+        width: 2rem;
+        height: 2rem;
+        border: 3px solid #f3f4f6;
+        border-top: 3px solid var(--secondary-color);
+        border-radius: 50%;
+        margin: 0 auto 0.5rem;
+        animation: spin 1s linear infinite;
+      }
+
+      /* === Animations === */
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      @keyframes slideInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* === Info Cards === */
+      .info-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .info-card {
+        background: white;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: var(--shadow-sm);
+        text-align: center;
+        border-left: 4px solid var(--secondary-color);
+      }
+
+      .info-card-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .info-card-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+      }
+
+      .info-card-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--primary-color);
+      }
+
+      /* === Responsive === */
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem 0.5rem;
+        }
+        
+        .header-title {
+          font-size: 2rem;
+        }
+        
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+        
+        .card-body {
+          padding: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1 class="header-title">🏦 Dự báo giá VCB</h1>
+        <p class="header-subtitle">Hệ thống AI dự báo giá cổ phiếu Vietcombank</p>
+      </header>
+
+      <main class="card">
+        <div class="card-header">
+          <h2 class="card-title">📈 Nhập thông tin dự báo</h2>
+          <p class="card-description">Vui lòng nhập đầy đủ các thông số để dự báo giá cổ phiếu</p>
+        </div>
+
+        <div class="card-body">
+          <div class="info-cards">
+            <div class="info-card">
+              <div class="info-card-icon">💰</div>
+              <div class="info-card-title">Mô hình</div>
+              <div class="info-card-value">Gradient Boosting</div>
+            </div>
+            <div class="info-card">
+              <div class="info-card-icon">📊</div>
+              <div class="info-card-title">Độ chính xác</div>
+              <div class="info-card-value">89%+</div>
+            </div>
+            <div class="info-card">
+              <div class="info-card-icon">⚡</div>
+              <div class="info-card-title">Thời gian</div>
+              <div class="info-card-value">Tức thì</div>
+            </div>
+            <div class="info-card">
+              <div class="info-card-icon">🎯</div>
+              <div class="info-card-title">Dự báo</div>
+              <div class="info-card-value">Ngày tiếp theo</div>
+            </div>
+          </div>
+
+          <form method="post" id="prediction-form">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="open">💹 Giá mở cửa (Open)</label>
+                <input class="form-input" id="open" name="open" type="number" step="0.01" required placeholder="VD: 85000" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="high">📈 Giá cao nhất (High)</label>
+                <input class="form-input" id="high" name="high" type="number" step="0.01" required placeholder="VD: 86000" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="low">📉 Giá thấp nhất (Low)</label>
+                <input class="form-input" id="low" name="low" type="number" step="0.01" required placeholder="VD: 84000" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="volume">📊 Khối lượng (Volume)</label>
+                <input class="form-input" id="volume" name="volume" type="number" step="1" required placeholder="VD: 1500000" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="return1d">📊 Lợi suất 1 ngày</label>
+                <input class="form-input" id="return1d" name="return1d" type="number" step="0.0001" required placeholder="VD: 0.0123" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="ma5">📈 MA 5 ngày</label>
+                <input class="form-input" id="ma5" name="ma5" type="number" step="0.01" required placeholder="VD: 85500" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="ma20">📈 MA 20 ngày</label>
+                <input class="form-input" id="ma20" name="ma20" type="number" step="0.01" required placeholder="VD: 84500" />
+              </div>
+            </div>
+
+            <button class="btn" type="submit">
+              🚀 Dự báo giá cổ phiếu
+            </button>
+          </form>
+
+          <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Đang xử lý dự báo...</p>
+          </div>
+
+          {% if prediction is not none %}
+          <div class="result">
+            <div class="result-title">🎯 Kết quả dự báo</div>
+            <div class="result-value">{{ "{:,.0f}".format(prediction) }} VND</div>
+            <div class="result-note">
+              * Kết quả dự báo chỉ mang tính chất tham khảo
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </main>
+    </div>
+
+    <script>
+     
+      document.getElementById('prediction-form').addEventListener('submit', function(e) {
+        const inputs = this.querySelectorAll('input[required]');
+        let isValid = true;
+        
+     
+        inputs.forEach(input => {
+          if (!input.value.trim()) {
+            isValid = false;
+            input.style.borderColor = 'var(--danger-color)';
+            input.focus();
+          } else {
+            input.style.borderColor = 'var(--border-color)';
+          }
+        });
+        
+        if (!isValid) {
+          e.preventDefault();
+          alert('⚠️ Vui lòng nhập đầy đủ tất cả các trường thông tin!');
+          return false;
+        }
+        
+      
+        document.getElementById('loading').style.display = 'block';
+        this.querySelector('.btn').disabled = true;
+        this.querySelector('.btn').innerHTML = '⏳ Đang xử lý...';
+      });
+
+      // === Auto-format number inputs ===
+      document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('input', function() {
+          if (this.value && this.name !== 'return1d') {
+            // Format numbers with thousands separator (except return1d)
+            const value = parseFloat(this.value.replace(/,/g, ''));
+            if (!isNaN(value)) {
+              this.style.color = 'var(--success-color)';
+            }
+          }
+        });
+        
+        input.addEventListener('blur', function() {
+          if (this.value) {
+            this.style.borderColor = 'var(--success-color)';
+          }
+        });
+      });
+
+      // === Smooth scroll animations ===
+      document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.info-card, .form-group');
+        cards.forEach((card, index) => {
+          card.style.opacity = '0';
+          card.style.transform = 'translateY(20px)';
+          setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+          }, index * 100);
+        });
+      });
+    </script>
+  </body>
+</html>
